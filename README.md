@@ -24,3 +24,58 @@ For example, this allows:
 - `make go-run`
 - `make docker-build`
 - `make docker-run`
+
+## 6. Create a new publicly accessible git repo
+
+## 7. Push these files to the repo
+
+## 8. Create new OCP Application in CRC
+
+ - launch OCP console: `crc console`
+ - Developer perspective
+ - Click `+Add` In left hand menu
+ - Select `From Dockerfile`
+ - Ensure all values are correct. Specifically:
+    - git repo url, e.g. `https://github.com/thisisdavidbell/hello-ocp`
+    - Container port - enter the port specified by `EXPOSE` in the Dockerfile
+    - Resources - select DeploymentConfig for more Openshift specific functionality
+    - Create a Route - leave ticked
+ - Click on `Routing`
+   - enter a hostname, including the default dns of `apps-crc.testing`, e.g. hello-ocp.apps-crc.testing
+   - Path: `/hello-ocp`
+   - Target port - 8080 (A service will be created which exposes this port (_TODO_ - I already entered the container port, so is this the port the service exposes, that the Route then points at? ))
+ - Click `Create`
+
+## 9. Test the app
+
+Once the build process has finished, you should now be able to run the app:
+ - Run: `curl  hello-ocp.apps-crc.testing/hello-ocp`
+
+
+## 10. View the build etc
+
+_TODO_
+
+## 11. View the deploymentConfig, Service, Route in the console
+
+_TODO_
+
+## 12. Make a change to the app, rebuild the image
+
+- Make a change to the go app, e.g. change the Hello message.
+- Push the change to the public repo.
+- Remember the git commit message
+
+- Select Administrator Perspective
+- Select Builds->BuildConfigs
+- Select Rebuild
+- View the build under Builds
+- Note the newly running build shows the new commit message.
+
+## 13. Test the app
+
+Once the build process has finished, you should now be able to run the app again:
+ - Run: `curl  hello-ocp.apps-crc.testing/hello-ocp`
+ - Note the new message is now returned.
+
+_TODO_: Can we update the triggers to automatically spot this (if it wouldn't already given time).
