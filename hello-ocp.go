@@ -8,7 +8,7 @@ import (
 var PORT = "8080"
 
 func hello(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(w, "hello OCP.\n")
+	fmt.Fprintf(w, "hello again OCP.\n")
 }
 
 func main() {
