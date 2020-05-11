@@ -29,7 +29,13 @@ For example, this allows:
 
 ## 7. Push these files to the repo
 
-## 8. Create new OCP Application in CRC
+## 8 Create new OCP Application in CRC
+
+For purposes of this demo, choose between:
+ - a. creating app in UI from Dockerfile
+ - b. creating app from CLI from source code
+
+### 8.a Create app from UI from Dockerfile
 
  - launch OCP console: `crc console`
  - Developer perspective
@@ -45,6 +51,21 @@ For example, this allows:
    - Path: `/hello-ocp`
    - Target port - 8080 (A service will be created which exposes this port (_TODO_ - I already entered the container port, so is this the port the service exposes, that the Route then points at? ))
  - Click `Create`
+
+### 8.b Create app from CLI from source code
+
+ - ensure you are connect to an OCP
+ - in root dir of hello-ocp repo, run:
+    - `oc new-project project1`
+    - `oc new-app .`
+
+Amazingly, that is all you need to do.
+OCP will now go off and spot this is go code, build a go image, push that into the internal image repo in OCP, create image streams, etc and deploy the image as a DeploymentConfig.
+
+What it doesn't do is create a route, so we should do that.
+ - perform route UI step above
+
+ _TODO_ add in CLI method to create this.
 
 ## 9. Test the app
 
@@ -63,7 +84,7 @@ _TODO_
 ## 12. Make a change to the app, rebuild the image
 
 - Make a change to the go app, e.g. change the Hello message.
-- Push the change to the public repo.
+- Push the change to the public repo, or just change locallt.
 - Remember the git commit message
 
 - Select Administrator Perspective
@@ -72,10 +93,12 @@ _TODO_
 - View the build under Builds
 - Note the newly running build shows the new commit message.
 
+_TODO_ check this works for CLI local source approach too
+
 ## 13. Test the app
 
 Once the build process has finished, you should now be able to run the app again:
  - Run: `curl  hello-ocp.apps-crc.testing/hello-ocp`
  - Note the new message is now returned.
 
-_TODO_: Can we update the triggers to automatically spot this (if it wouldn't already given time).
+_TODO_: Can we update the triggers to automatically spot this (if it wouldn't already given time)?
