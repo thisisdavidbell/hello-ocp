@@ -9,6 +9,7 @@ Plan:
  - 2. update operator to also create a route as part of a 'helloocp' instance
  - 3. update to create a deployment, and use size and other fields
 
+## 1. create an operator to deploy a hello-ocp image (probably as a pod)
 
 Following steps, with changes:
  - command to create crd: `operator-sdk add api --api-version=helloocp.example.com/v1alpha1 --kind=Helloocp`
@@ -82,3 +83,20 @@ Spec: corev1.PodSpec{
     - `oc policy add-role-to-user registry-viewer kubeadmin`
 - `docker login -u kubeadmin -t <oc whoami -t> default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp`
 - `docker push default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp:v0.0.1`
+- register crd: `oc create -f deploy/crds/helloocp.example.com_helloocps_crd.yaml`
+- build operator: `operator-sdk build default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp-operator:v0.0.1`
+- push image: `docker push default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp-operator:v0.0.1`
+- update `image:`  in deploy/opertaor.yaml to `image: image-registry.openshift-image-registry.svc:5000/project1/hello-ocp-operator:v0.0.1`
+- deploy as instructed:
+```
+kubectl create -f deploy/service_account.yaml
+kubectl create -f deploy/role.yaml
+kubectl create -f deploy/role_binding.yaml
+kubectl create -f deploy/operator.yaml
+```
+- create a 'hello-ocp': `oc apply -f deploy/crds/helloocp.example.com_v1alpha1_helloocp_cr.yaml`
+- confirm pod up and running
+  - _TODO_ I noted the pod log was empty - no `server running on 8080` message - why?
+- set up a service manually
+- set up a route manually
+- test: `curl default-route-openshift-image-registry.apps-crc.testing/hello-ocp`

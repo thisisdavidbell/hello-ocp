@@ -29,6 +29,8 @@ Follow tutorial steps at: https://docs.openshift.com/container-platform/4.4/oper
     - manually perform image name update of deploy/operator.yaml
     - run `docker login quay.io` before the push
   - internal registry
+    - expose registry on default route:
+      - `oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge`
     - grant permission for kubeadmin to use registry:
       - `oc policy add-role-to-user registry-viewer kubeadmin`
     - docker login:
