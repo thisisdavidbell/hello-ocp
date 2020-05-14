@@ -2,6 +2,16 @@ README
 
 This repo tracks the process of creating a simple Hello World httpserver go app, and the process required to deploy it into Openshift Containers Platform. It was created using CodeReady Containers (crc).
 
+## 0. Prereqs
+
+ - Setup CodeReady Containers, or an alternative OCP 4.4 setup.
+   - https://code-ready.github.io/crc/
+   - NOTE: VPN plays havoc with crc, so only work with crc when disconnected.
+   - run `crc status` before starting any work.
+   - run `crc setup` before starting any work.
+ - switch between running Docker or CRC, but NOT both.
+   - They both used most of a MacBooks memory, so cant run at the same time. Switch between them as required.
+
 ## 1. Create Go app
 Simple go app here: [hello-ocp.go](hello-ocp.go)
 
@@ -87,11 +97,18 @@ _TODO_
 - Push the change to the public repo, or just change locallt.
 - Remember the git commit message
 
-- Select Administrator Perspective
-- Select Builds->BuildConfigs
-- Select Rebuild
-- View the build under Builds
-- Note the newly running build shows the new commit message.
+- in UI
+  - Select Administrator Perspective
+  - Select Builds->BuildConfigs
+  - Select Rebuild
+  - View the build under Builds
+  - Note the newly running build shows the new commit message.
+
+- on CLI
+Note: you must have committed the change in git locally and pushed to git (presume oc new-app . spotted this is git and now uses git server?)
+  - `oc get build`
+  - `oc start-build hello-ocp`
+  - `oc get builds`
 
 _TODO_ check this works for CLI local source approach too
 
@@ -102,3 +119,11 @@ Once the build process has finished, you should now be able to run the app again
  - Note the new message is now returned.
 
 _TODO_: Can we update the triggers to automatically spot this (if it wouldn't already given time)?
+
+## 14. Try operators
+
+Try creating operators following: [OPERATORS.md](OPERATORS.md)
+
+## 15. Try operators with OLM
+
+Try creating operators following: [OPERATORS.md](OPERATORS.md)
