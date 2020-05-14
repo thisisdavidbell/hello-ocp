@@ -64,9 +64,21 @@ replacing busybox with with image and name (we will push image to internal regis
 Spec: corev1.PodSpec{
   Containers: []corev1.Container{
     {
-      Name:    "helloocp",
-      Image:   "image-registry.openshift-image-registry.svc:5000",
+      Name:    "hello-ocp",
+      Image:   "image-registry.openshift-image-registry.svc:5000/project1/hello-ocp:v0.0.1",
       Command: []string{"sleep", "3600"},
     },
   },
+},
   ```
+
+- I updated the msg printed by hello-ocp.go to include the string `v0.0.1`
+- `docker build -t hello-ocp:v0.0.1 .`
+- `docker tag hello-ocp:v0.0.1 default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp:v0.0.1`
+- if not already done:
+  - expose registry on default route:
+    - `oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge`
+  - grant permission for kubeadmin to use registry:
+    - `oc policy add-role-to-user registry-viewer kubeadmin`
+- `docker login -u kubeadmin -t <oc whoami -t> default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp`
+- `docker push default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp:v0.0.1`
