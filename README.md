@@ -59,12 +59,12 @@ For purposes of this demo, choose between:
  - Click on `Routing`
    - enter a hostname, including the default dns of `apps-crc.testing`, e.g. hello-ocp.apps-crc.testing
    - Path: `/hello-ocp`
-   - Target port - 8080 (A service will be created which exposes this port (_TODO_ - I already entered the container port, so is this the port the service exposes, that the Route then points at? ))
+   - Target port - 8080 (A service will be created which exposes this port
  - Click `Create`
 
 ### 8.b Create app from CLI from source code
 
- - ensure you are connect to an OCP
+ - ensure you are connected to an OCP
  - in root dir of hello-ocp repo, run:
     - `oc new-project project1`
     - `oc new-app .`
@@ -74,8 +74,7 @@ OCP will now go off and spot this is go code, build a go image, push that into t
 
 What it doesn't do is create a route, so we should do that.
  - perform route UI step above
-
- _TODO_ add in CLI method to create this.
+ - _TODO_ add in CLI method to create this.
 
 ## 9. Test the app
 
@@ -85,16 +84,12 @@ Once the build process has finished, you should now be able to run the app:
 
 ## 10. View the build etc
 
-_TODO_
-
 ## 11. View the deploymentConfig, Service, Route in the console
-
-_TODO_
 
 ## 12. Make a change to the app, rebuild the image
 
 - Make a change to the go app, e.g. change the Hello message.
-- Push the change to the public repo, or just change locallt.
+- Push the change to the public repo.
 - Remember the git commit message
 
 - in UI
@@ -106,7 +101,7 @@ _TODO_
 
 - on CLI
 Note: you must have committed the change in git locally and pushed to git (presume oc new-app . spotted this is git and now uses git server?)
-  - `oc get build`
+  - `oc get builds`
   - `oc start-build hello-ocp`
   - `oc get builds`
 
@@ -118,12 +113,16 @@ Once the build process has finished, you should now be able to run the app again
  - Run: `curl  hello-ocp.apps-crc.testing/hello-ocp`
  - Note the new message is now returned.
 
-_TODO_: Can we update the triggers to automatically spot this (if it wouldn't already given time)?
+_TODO_: Can we update the triggers to automatically spot this?
 
-## 14. Try operators
-
-Try creating operators following: [OPERATORS.md](OPERATORS.md)
-
-## 15. Try operators with OLM
+## 14. Try operators with existing example
 
 Try creating operators following: [OPERATORS.md](OPERATORS.md)
+
+## 15. Try operators with OLM with existing example
+
+Try creating operators with OLM following: [OPERATORS-OLM.md](OPERATORS-OLM.md)
+
+## 16. Try operators with OLM for this hello-ocp app
+
+Try creating operators with OLM for hello-ocp app following: [OPERATORS-HELLO-OCP.md](OPERATORS-HELLO-OCP.md)

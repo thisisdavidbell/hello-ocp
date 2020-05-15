@@ -145,7 +145,7 @@ func newPodForCR(cr *helloocpv1alpha1.Helloocp) *corev1.Pod {
 				{
 					Name:    "hello-ocp",
 					Image:   "image-registry.openshift-image-registry.svc:5000/project1/hello-ocp:v0.0.1",
-					Command: []string{"sleep", "3600"},
+					Command: []string{"./hello-ocp"},
 				},
 			},
 		},
