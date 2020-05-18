@@ -9,6 +9,7 @@ Plan:
  - 2. Update operator to also create a service and route as part of a 'helloocp' kind
  - 3. Update to create a deployment, and use size and other fields
  - 4. Consider adding validation, as mentioned in crd file `hello-ocp-operator/pkg/apis/helloocp/v1alpha1/helloocp_types.go`: `	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html`
+ - 5. Can I use catalogsource etc in order to add my operator to OperatorHub?
 
 ## 1. Create an operator to deploy a hello-ocp image (probably as a pod)
 
@@ -84,6 +85,8 @@ Spec: corev1.PodSpec{
     - `oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge`
   - grant permission for kubeadmin to use registry:
     - `oc policy add-role-to-user registry-viewer kubeadmin`
+  - register the internal registry as an insecure registry in docker (follow this or equivalent):
+    - Docker->Preferences->daemon-> add default-route-openshift-image-registry.apps-crc.testing as insecure registry
 - `docker login -u kubeadmin -t <oc whoami -t> default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp`
 - `docker push default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp:v0.0.1`
 

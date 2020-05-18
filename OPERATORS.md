@@ -32,6 +32,8 @@ Follow tutorial steps at: https://docs.openshift.com/container-platform/4.4/oper
       - `oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge`
     - grant permission for kubeadmin to use registry:
       - `oc policy add-role-to-user registry-viewer kubeadmin`
+    - register the internal registry as an insecure registry in docker (follow this or equivalent):
+      - Docker->Preferences->daemon-> add default-route-openshift-image-registry.apps-crc.testing as insecure registry
     - docker login:
       - `docker login -u kubeadmin -p <output from 'oc whoami -t'> default-route-openshift-image-registry.apps-crc.testing`
       - with crc not having external access, also need to get the memcached image which the memcached operator uses for the memcached containers:
