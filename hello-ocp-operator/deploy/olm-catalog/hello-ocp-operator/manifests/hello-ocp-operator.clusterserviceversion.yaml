@@ -1,0 +1,161 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "helloocp.example.com/v1alpha1",
+          "kind": "Helloocp",
+          "metadata": {
+            "name": "example-helloocp-3"
+          },
+          "spec": {
+            "size": 1,
+            "someString": "imSomeString"
+          }
+        }
+      ]
+    capabilities: Basic Install
+  name: hello-ocp-operator.v0.0.1
+  namespace: project1
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Helloocp is the Schema for the helloocps API
+      kind: Helloocp
+      name: helloocps.helloocp.example.com
+      version: v1alpha1
+  displayName: Hello Ocp Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments:
+      - name: hello-ocp-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: hello-ocp-operator
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                name: hello-ocp-operator
+            spec:
+              containers:
+              - command:
+                - hello-ocp-operator
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: OPERATOR_NAME
+                  value: hello-ocp-operator
+                image: image-registry.openshift-image-registry.svc:5000/project1/hello-ocp-operator:v0.0.1
+                imagePullPolicy: Always
+                name: hello-ocp-operator
+                resources: {}
+              serviceAccountName: hello-ocp-operator
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - services/finalizers
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          - secrets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - get
+          - create
+        - apiGroups:
+          - apps
+          resourceNames:
+          - hello-ocp-operator
+          resources:
+          - deployments/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          verbs:
+          - get
+        - apiGroups:
+          - apps
+          resources:
+          - replicasets
+          - deployments
+          verbs:
+          - get
+        - apiGroups:
+          - helloocp.example.com
+          resources:
+          - '*'
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        serviceAccountName: hello-ocp-operator
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - ""
+  maintainers:
+  - {}
+  maturity: alpha
+  provider: {}
+  version: 0.0.1

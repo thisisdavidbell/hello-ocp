@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: helloocp-route
+  namespace: project1
+spec:
+  host: hello-ocp.apps-crc.testing
+  path: /hello-ocp
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: example
+    weight: 100
+  wildcardPolicy: None

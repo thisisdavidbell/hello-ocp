@@ -116,7 +116,78 @@ selector:
   - test: `curl http://hello-ocp.apps-crc.testing/hello-ocp`
   - SUCCESS
 
-- _TODO_ NEXT STEP - continue tutorial undeploying all objects, them creating clusterserviceversion and deploying operator with OLM.
+
+### Deploying Helloocp operator with OLM
+
+Following: https://github.com/operator-framework/getting-started#manage-the-operator-using-the-operator-lifecycle-manager
+
+- ensured deleted items from operator only tutorial above.
+- created csv using: `operator-sdk generate csv --csv-version 0.0.1 --update-crds`
+- note new csv and crd files appeared in `deploy/olm-catalog/hello-ocp-operator/manifests`
+- need to jump to remaining steps in: https://docs.openshift.com/container-platform/4.4/operators/operator_sdk/osdk-getting-started.html#managing-memcached-operator-using-olm_osdk-getting-started in order to deploy OLM managed operator:
+  - update `namespace:`` to `project1`
+    - _TODO_: understand why this is required.
+  - create an operator group contaiing namespace to deploy into:
+```
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: memcached-operator-group
+  namespace: default
+spec:
+  targetNamespaces:
+  - project1
+```
+NOTE: update namespace from `default` to `project1`
+ - deploy the ClusterServiceVersion: `oc apply -f deploy/olm-catalog/hello-ocp-operator/manifests/hello-ocp-operator.clusterserviceversion.yaml`
+ - `oc get deployments`
+ - deploy the crd (note the 2 crds from operator and OLM are identical): `oc apply -f deploy/olm-catalog/hello-ocp-operator/manifests/helloocp.example.com_helloocps_crd.yaml`
+- Copy cr yaml: `cp deploy/crds/helloocp.example.com_v1alpha1_helloocp_cr.yaml helloocp-cr.yaml`
+- Deploy: `oc apply -f helloocp-cr.yaml`
+- Find the ops metadata.label.app string
+- Create a service in console, or on cli:
+  - create file `helloocp-service.yaml`:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-helloocp-3-service
+  namespace: project1
+spec:
+  selector:
+    app: example-helloocp-3
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+```
+  - `oc apply -f helloocp-service.yaml`
+
+- create route in console to this service, or on cli by:
+  - create file `helloocp-route.yaml`
+```
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: helloocp-route
+  namespace: project1
+spec:
+  host: hello-ocp.apps-crc.testing
+  path: /hello-ocp
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: example
+    weight: 100
+  wildcardPolicy: None
+```
+  - deploy: `oc apply -f helloocp-route.yaml `
+
+- test: `curl http://hello-ocp.apps-crc.testing/hello-ocp`
+
+
 
 
 - _TODO_ I notice a metrics operator pod/service running - what is this for.
