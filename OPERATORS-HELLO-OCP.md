@@ -5,11 +5,12 @@ Following basic tutorial here (same basic tutorial as previous tutorials): https
  - using crc - has OLM enabled already
 
 Plan:
- - 1. Create an operator to deploy a hello-ocp image (probably as a pod) - DONE
+ - 1. DONE - Create an operator to deploy a hello-ocp image (probably as a pod)
  - 2. Update operator to also create a service and route as part of a 'helloocp' kind
  - 3. Update to create a deployment, and use size and other fields
- - 4. Consider adding validation, as mentioned in crd file `hello-ocp-operator/pkg/apis/helloocp/v1alpha1/helloocp_types.go`: `	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html`
+ - 4. DONE - Consider adding validation, as mentioned in crd file `hello-ocp-operator/pkg/apis/helloocp/v1alpha1/helloocp_types.go`: `	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html`
  - 5. Can I use catalogsource etc in order to add my operator to OperatorHub?
+ - 6. Support update with subscription, index, installplan etc...
 
 ## 1. Create an operator to deploy a hello-ocp image (probably as a pod)
 
