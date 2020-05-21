@@ -4,5 +4,5 @@ metadata:
   name: example-helloocp-3
 spec:
   # Add fields here
-  size: 1
-  someString: imSomeString
+  size: 3
+  someString: Option1

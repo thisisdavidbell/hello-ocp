@@ -34,9 +34,13 @@ spec:
             size:
               description: Size is the size of the memcached deployment
               format: int32
+              maximum: 3
               type: integer
             someString:
               description: An extra spec field - a string to see what happens
+              enum:
+              - Option1
+              - Option2
               type: string
           required:
           - size

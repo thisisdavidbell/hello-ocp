@@ -27,11 +27,13 @@ Following steps of linked tutorial, with following changes:
  	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
  	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 
- 	// Size is the size of the memcached deployment
- 	Size int32 `json:"size"`
+  // +kubebuilder:validation:Maximum=3
+	// Size is the size of the memcached deployment
+	Size int32 `json:"size"`
 
- 	// An extra spec field - a string to see what happens
- 	SomeString string `json:"someString"`
+	// +kubebuilder:validation:Enum=Option1;Option2
+	// An extra spec field - a string to see what happens
+	SomeString string `json:"someString"`
  }
 
  // HelloocpStatus defines the observed state of Helloocp
@@ -47,6 +49,8 @@ Following steps of linked tutorial, with following changes:
  	VersionString string `json:"versionString"`
  }
  ```
+ - NOTE: I added validation too.
+ - ran: `operator-sdk generate crds` to update crd with new validation
  - added `  someString: imSomeString` to end or cr file (`hello-ocp-operator/deploy/crds/helloocp.example.com_v1alpha1_helloocp_cr.yaml`). It didnt get added, so assuming I need to manually (?)
 
  - createcontroller command: `operator-sdk add controller --api-version=helloocp.example.com/v1alpha1 --kind=Helloocp`
@@ -91,6 +95,7 @@ Spec: corev1.PodSpec{
 - `docker push default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp:v0.0.1`
 
 - register crd: `oc create -f deploy/crds/helloocp.example.com_helloocps_crd.yaml`
+  - note, if adding validation to types file `helloocp_types.go` and regenratoing crd to include the validation, you only need to redeploy the crd file
 - build operator: `operator-sdk build default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp-operator:v0.0.1`
 - push image: `docker push default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp-operator:v0.0.1`
 - update `image:`  in deploy/operator.yaml to `image: image-registry.openshift-image-registry.svc:5000/project1/hello-ocp-operator:v0.0.1`
@@ -146,7 +151,20 @@ NOTE: update namespace from `default` to `project1`
  - `oc get deployments`
  - deploy the crd (note the 2 crds from operator and OLM are identical): `oc apply -f deploy/olm-catalog/hello-ocp-operator/manifests/helloocp.example.com_helloocps_crd.yaml`
 - Copy cr yaml: `cp deploy/crds/helloocp.example.com_v1alpha1_helloocp_cr.yaml helloocp-cr.yaml`
+- update to fail the validation:
+```
+apiVersion: helloocp.example.com/v1alpha1
+kind: Helloocp
+metadata:
+  name: example-helloocp-3
+spec:
+  # Add fields here
+  size: 4
+  someString: imSomeString
+```
 - Deploy: `oc apply -f helloocp-cr.yaml`
+- Note the failure due to both validation rules failing
+- Fix the `helloocp-cr.yaml` file and apply again: `oc apply -f helloocp-cr.yaml`
 - Find the ops metadata.label.app string
 - Create a service in console, or on cli:
   - create file `helloocp-service.yaml`:
