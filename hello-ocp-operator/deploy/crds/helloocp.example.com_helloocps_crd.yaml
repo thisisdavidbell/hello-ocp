@@ -31,20 +31,17 @@ spec:
         spec:
           description: HelloocpSpec defines the desired state of Helloocp
           properties:
+            helloName:
+              description: HelloName - the name to say hello
+              type: string
             size:
               description: Size is the size of the memcached deployment
               format: int32
               maximum: 3
               type: integer
-            someString:
-              description: An extra spec field - a string to see what happens
-              enum:
-              - Option1
-              - Option2
-              type: string
           required:
+          - helloName
           - size
-          - someString
           type: object
         status:
           description: HelloocpStatus defines the observed state of Helloocp

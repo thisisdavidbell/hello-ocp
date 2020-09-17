@@ -2,9 +2,9 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: helloocp-route
-  namespace: project1
+  namespace: drb-hello
 spec:
-  host: hello-ocp.apps-crc.testing
+  host: hello-ocp.apps.drb-449-10sept2.cp.fyre.ibm.com
   path: /hello-ocp
   port:
     targetPort: 8080

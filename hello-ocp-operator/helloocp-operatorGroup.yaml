@@ -1,0 +1,8 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: memcached-operator-group
+  namespace: drb-hello
+spec:
+  targetNamespaces:
+  - drb-hello

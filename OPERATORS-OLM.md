@@ -4,7 +4,7 @@
 
 Following: https://docs.openshift.com/container-platform/4.4/operators/operator_sdk/osdk-getting-started.html#managing-memcached-operator-using-olm_osdk-getting-started
 
-Follow instructions in link above, withj following changes:
+Follow instructions in link above, with following changes:
  - created the operatorGroup in default and project1 namespaces
  - update `namespace: placeholder` to `namespace: project1` in `deploy/olm-catalog/memcached-operator/manifests/memcached-operator.clusterserviceversion.yaml`
  - command seems to be `oc apply -f deploy/olm-catalog/memcached-operator/manifests/memcached-operator.clusterserviceversion.yaml`

@@ -17,9 +17,8 @@ type HelloocpSpec struct {
 	// Size is the size of the memcached deployment
 	Size int32 `json:"size"`
 
-	// +kubebuilder:validation:Enum=Option1;Option2
-	// An extra spec field - a string to see what happens
-	SomeString string `json:"someString"`
+	// HelloName - the name to say hello
+	HelloName string `json:"helloName"`
 }
 
 // HelloocpStatus defines the observed state of Helloocp

@@ -119,13 +119,30 @@ func (r *ReconcileHelloocp) Reconcile(request reconcile.Request) (reconcile.Resu
 		}
 
 		// Pod created successfully - don't requeue
+		reqLogger.Info("Pod successfully created - dont requeue", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
 		return reconcile.Result{}, nil
 	} else if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	// Pod already exists - don't requeue
-	reqLogger.Info("Skip reconcile: Pod already exists", "Pod.Namespace", found.Namespace, "Pod.Name", found.Name)
+	// Orig: Pod already exists - don't requeue
+	// Changed: for now, always update the pod (this is even if not changed - just wip)
+
+	//WIP TODO - hack - loop through correctly
+	if found.Spec.Containers[0].Env[0].Value != pod.Spec.Containers[0].Env[0].Value {
+		// Clearly a silly approach - have to delete as cannot change env and would be meaningless to anyway.
+		reqLogger.Info("Always delete pod as envs dont match.", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+		reqLogger.Info(pod.Spec.Containers[0].Env[0].Value, "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+
+		err = r.client.Delete(context.TODO(), found)
+		if err != nil {
+			reqLogger.Info("pod Delete errored", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+			return reconcile.Result{}, err
+		}
+	}
+	reqLogger.Info("pod  successfully - dont requeue", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+
+	// pod all good  - dont requeue.
 	return reconcile.Result{}, nil
 }
 
@@ -144,8 +161,14 @@ func newPodForCR(cr *helloocpv1alpha1.Helloocp) *corev1.Pod {
 			Containers: []corev1.Container{
 				{
 					Name:    "hello-ocp",
-					Image:   "image-registry.openshift-image-registry.svc:5000/project1/hello-ocp:v0.0.1",
+					Image:   "somedockerrepohostname/drb/hello-ocp:v0.0.1",
 					Command: []string{"./hello-ocp"},
+					Env: []corev1.EnvVar{
+						{
+							Name:  "HELLONAME",
+							Value: cr.Spec.HelloName,
+						},
+					},
 				},
 			},
 		},

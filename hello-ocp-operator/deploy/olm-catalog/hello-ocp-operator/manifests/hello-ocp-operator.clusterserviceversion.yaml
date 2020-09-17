@@ -18,7 +18,7 @@ metadata:
       ]
     capabilities: Basic Install
   name: hello-ocp-operator.v0.0.1
-  namespace: project1
+  namespace: drb-hello
 spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
@@ -60,7 +60,7 @@ spec:
                       fieldPath: metadata.name
                 - name: OPERATOR_NAME
                   value: hello-ocp-operator
-                image: image-registry.openshift-image-registry.svc:5000/project1/hello-ocp-operator:v0.0.1
+                image: somedockerrepohostname/drb/hello-ocp-operator:v0.0.1
                 imagePullPolicy: Always
                 name: hello-ocp-operator
                 resources: {}

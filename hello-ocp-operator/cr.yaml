@@ -1,0 +1,8 @@
+apiVersion: helloocp.example.com/v1alpha1
+kind: Helloocp
+metadata:
+  name: example-helloocp-3
+spec:
+  # Add fields here
+  size: 1
+  helloName: name4
