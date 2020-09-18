@@ -3,6 +3,8 @@ module github.com/thisisdavidbell/hello-ocp/hello-ocp-operator
 go 1.13
 
 require (
+	github.com/go-logr/logr v0.1.0
+	github.com/openshift/api v0.0.0-20200205133042-34f0ec8dab87
 	github.com/operator-framework/operator-sdk v0.17.0
 	github.com/spf13/pflag v1.0.5
 	k8s.io/api v0.17.4

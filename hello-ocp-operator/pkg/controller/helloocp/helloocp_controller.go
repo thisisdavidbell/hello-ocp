@@ -3,12 +3,15 @@ package helloocp
 import (
 	"context"
 
+	"github.com/go-logr/logr"
+	//routev1 "github.com/openshift/api/route/v1"
 	helloocpv1alpha1 "github.com/thisisdavidbell/hello-ocp/hello-ocp-operator/pkg/apis/helloocp/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -61,6 +64,22 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	err = c.Watch(&source.Kind{Type: &corev1.Service{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &helloocpv1alpha1.Helloocp{},
+	})
+	if err != nil {
+		return err
+	}
+
+	/*	err = c.Watch(&source.Kind{Type: &routev1.Route{}}, &handler.EnqueueRequestForOwner{
+			IsController: true,
+			OwnerType:    &helloocpv1alpha1.Helloocp{},
+		})
+		if err != nil {
+			return err
+		}
+	*/
 	return nil
 }
 
@@ -100,6 +119,53 @@ func (r *ReconcileHelloocp) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, err
 	}
 
+	result, err := reconcilePod(instance, r, reqLogger)
+	if err != nil || result.Requeue == true {
+		// reconcile requested requeue or errored, so requeue
+		return result, err
+	} // else all good carry on
+
+	result, err = reconcileService(instance, r, reqLogger)
+	if err != nil || result.Requeue == true {
+		// reconcile requested requeue or errored, so requeue
+		return result, err
+	} // else all good carry on
+
+	// if we got here all went well. Do not requeue
+	return reconcile.Result{}, nil
+}
+
+// newPodForCR returns a busybox pod with the same name/namespace as the cr
+func newPodForCR(cr *helloocpv1alpha1.Helloocp) *corev1.Pod {
+	labels := map[string]string{
+		"app": cr.Name,
+	}
+	return &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name + "-pod",
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:    "hello-ocp",
+					Image:   "somerandomhostnamem/drb/hello-ocp:v0.0.1",
+					Command: []string{"./hello-ocp"},
+					Env: []corev1.EnvVar{
+						{
+							Name:  "HELLONAME",
+							Value: cr.Spec.HelloName,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func reconcilePod(instance *helloocpv1alpha1.Helloocp, r *ReconcileHelloocp, reqLogger logr.Logger) (reconcile.Result, error) {
+
 	// Define a new Pod object
 	pod := newPodForCR(instance)
 
@@ -110,7 +176,7 @@ func (r *ReconcileHelloocp) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	// Check if this Pod already exists
 	found := &corev1.Pod{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
 		err = r.client.Create(context.TODO(), pod)
@@ -146,31 +212,70 @@ func (r *ReconcileHelloocp) Reconcile(request reconcile.Request) (reconcile.Resu
 	return reconcile.Result{}, nil
 }
 
+//apiVersion: v1
+//kind: Service
+//metadata:
+//  name: example
+//  namespace: drb-hello
+//spec:
+//  selector:
+//    app: example-helloocp-3
+//  ports:
+//    - protocol: TCP
+//      port: 8080
+//      targetPort: 8080
+
 // newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *helloocpv1alpha1.Helloocp) *corev1.Pod {
-	labels := map[string]string{
+func newServiceForCR(cr *helloocpv1alpha1.Helloocp) *corev1.Service {
+	selector := map[string]string{
 		"app": cr.Name,
 	}
-	return &corev1.Pod{
+
+	return &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
+			Name:      cr.Name + "-service",
 			Namespace: cr.Namespace,
-			Labels:    labels,
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
+		Spec: corev1.ServiceSpec{
+			Selector: selector,
+			Ports: []corev1.ServicePort{
 				{
-					Name:    "hello-ocp",
-					Image:   "somedockerrepohostname/drb/hello-ocp:v0.0.1",
-					Command: []string{"./hello-ocp"},
-					Env: []corev1.EnvVar{
-						{
-							Name:  "HELLONAME",
-							Value: cr.Spec.HelloName,
-						},
-					},
+					Protocol:   corev1.ProtocolTCP,
+					Port:       int32(8080),
+					TargetPort: intstr.FromInt(8080),
 				},
 			},
 		},
 	}
+}
+
+func reconcileService(instance *helloocpv1alpha1.Helloocp, r *ReconcileHelloocp, reqLogger logr.Logger) (reconcile.Result, error) {
+
+	// Define a new Pod object
+	pod := newServiceForCR(instance)
+
+	// Set Helloocp instance as the owner and controller
+	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Check if this Pod already exists
+	found := &corev1.Pod{}
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
+	if err != nil && errors.IsNotFound(err) {
+		reqLogger.Info("Creating a new Pod", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+		err = r.client.Create(context.TODO(), pod)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+
+		// Pod created successfully - don't requeue
+		reqLogger.Info("Pod successfully created - dont requeue", "Pod.Namespace", pod.Namespace, "Pod.Name", pod.Name)
+		return reconcile.Result{}, nil
+	} else if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// Orig: Pod already exists - don't requeue
+	return reconcile.Result{}, nil
 }

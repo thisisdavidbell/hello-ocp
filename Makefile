@@ -18,12 +18,3 @@ docker-build:
 .PHONY: docker-run
 docker-run:
 	docker run -p 8081:8080 -d hello-ocp:latest
-
-.PHONY: operator-build
-operator-build:
-	operator-sdk build somedockerrepohostname/drb/hello-ocp-operator:v0.0.1
-	docker push somedockerrepohostname/drb/hello-ocp-operator:v0.0.1
-
-.PHONY: operator-deploy
-operator-deploy:
-	echo TODO

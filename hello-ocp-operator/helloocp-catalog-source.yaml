@@ -1,0 +1,12 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: hello-ocp-operator-catalog
+  namespace: openshift-marketplace
+spec:
+  sourceType: grpc
+  image: somerandomhostnamem/drb/hello-ocp-operator-catalog:v0.0.1
+  displayName: Hello OCP
+  updateStrategy:
+    registryPoll: 
+      interval: 30m

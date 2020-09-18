@@ -8,11 +8,11 @@ metadata:
           "apiVersion": "helloocp.example.com/v1alpha1",
           "kind": "Helloocp",
           "metadata": {
-            "name": "example-helloocp-3"
+            "name": "example-helloocp"
           },
           "spec": {
             "size": 1,
-            "someString": "imSomeString"
+            "helloName": "aname"
           }
         }
       ]
@@ -60,7 +60,7 @@ spec:
                       fieldPath: metadata.name
                 - name: OPERATOR_NAME
                   value: hello-ocp-operator
-                image: somedockerrepohostname/drb/hello-ocp-operator:v0.0.1
+                image: somerandomhostnamem/drb/hello-ocp-operator:v0.0.1
                 imagePullPolicy: Always
                 name: hello-ocp-operator
                 resources: {}

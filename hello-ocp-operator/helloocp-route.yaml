@@ -4,12 +4,12 @@ metadata:
   name: helloocp-route
   namespace: drb-hello
 spec:
-  host: hello-ocp.apps.drb-449-10sept2.cp.fyre.ibm.com
+  host: fritest.apps.drb-4420-18sept.cp.fyre.ibm.com
   path: /hello-ocp
   port:
     targetPort: 8080
   to:
     kind: Service
-    name: example
+    name: ifre-test-helloocp-service
     weight: 100
   wildcardPolicy: None

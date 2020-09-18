@@ -1,6 +1,6 @@
 # Creating an Operator for our hello-ocp application
 
-NOTE: the docker repo hostname has been replqced by `somedockerrepohostname` everywhere - search and replace this to your hostname
+NOTE: the docker repo hostname has been replaced by `somerandomhostname` everywhere - search and replace this to your hostname
 
 Following basic tutorial here (same basic tutorial as previous tutorials): https://github.com/operator-framework/getting-started
  - but trying to apply it to our hello-ocp app
@@ -9,12 +9,17 @@ Following basic tutorial here (same basic tutorial as previous tutorials): https
 Plan:
  - 1. DONE - Create an operator to deploy a hello-ocp image (probably as a pod)
  - 2. DONE - Update to reconcile the name to say hello to, from a cr field - required update to model, and reconcile code.
- - 3. Update operator to also create a service and route as part of a 'helloocp' kind
+ - 3. ===> Update operator to also create a service and route as part of a 'helloocp' kind (include namespace in route to avoid clashes)
  - 4. Update to create a deployment, and use size and other fields
- - 5. DONE - Consider adding validation, as mentioned in crd file `hello-ocp-operator/pkg/apis/helloocp/v1alpha1/helloocp_types.go`: `	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html`
- - 6. Can I use catalogsource etc in order to add my operator to OperatorHub?
- - 7. Support update with subscription, index, installplan etc...
-
+ - 5. DONE - Add validation via annotations
+ - 6. DONE Create catalog, bundle, catsrc to add olm and show operator to OperatorHub
+ - 7. Create a new version of operator, and have a currently deployed operator auto updated
+ - 8. Create a new beta channel, and deploy a new version of operator to that channel (with or without new helloocp image)
+ - 9. Implement spec.version to allow me to specify which version of hello I want to provide
+ - 10. Add a validating webhook
+ - 11. Update Status of cr with useful value
+ - 12. Add a logo
+ 
 ## 1. Create an operator to deploy a hello-ocp image (probably as a pod)
 
 Following steps of linked tutorial, with following changes:
@@ -100,8 +105,8 @@ Spec: corev1.PodSpec{
 
 - register crd: `oc create -f deploy/crds/helloocp.example.com_helloocps_crd.yaml`
   - note, if adding validation to types file `helloocp_types.go` and regenratoing crd to include the validation, you only need to redeploy the crd file
-- build operator: `operator-sdk build default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp-operator:v0.0.1`
-- push image: `docker push default-route-openshift-image-registry.apps-crc.testing/project1/hello-ocp-operator:v0.0.1`
+- build operator: `operator-sdk build somerandomhostnamem/drb/hello-ocp-operator:v0.0.1`
+- push image: `docker push somerandomhostnamem/drb/hello-ocp-operator:v0.0.1`
 - update `image:`  in deploy/operator.yaml to `image: image-registry.openshift-image-registry.svc:5000/project1/hello-ocp-operator:v0.0.1`
 - deploy as instructed to create operator without OLM:
 ```
@@ -229,37 +234,54 @@ In order to actually make use of OLM, you need to create some or all of these ar
 ## Creating them for real
 
 #### bundle
-Create the bundle: `operator-sdk bundle create somedockerrepohostname/drb/hello-ocp-operator-bundle:v0.0.1 -b docker`
-Push the bundle: `docker push somedockerrepohostname/drb/hello-ocp-operator-bundle:v0.0.1`
+Create the bundle: `operator-sdk bundle create somerandomhostnamem/drb/hello-ocp-operator-bundle:v0.0.1 -b docker`
+Push the bundle: `docker push somerandomhostnamem/drb/hello-ocp-operator-bundle:v0.0.1`
 
 ##### notes: 
 - looks like we add channels by supplying extra args to operator-sdk- bundle create `--channels <channels> --default-channel v0.0.1`
 - if not specified, it seems to default to `stable` 
 
 #### catalog
-Create the catalog: `opm index add --bundles somedockerrepohostname/drb/hello-ocp-operator-bundle:v0.0.1 --tag somedockerrepohostname/drb/hello-ocp-operator-catalog:v0.0.1 -u docker`
+Create the catalog: `opm index add --bundles somerandomhostnamem/drb/hello-ocp-operator-bundle:v0.0.1 --tag somerandomhostnamem/drb/hello-ocp-operator-catalog:v0.0.1 -u docker`
 
 #### catsrc
-Enter catalog image into:
-```
-apiVersion: operators.coreos.com/v1alpha1
-kind: CatalogSource
-metadata:
-  name: hello-ocp-operator-catalog
-  namespace: openshift-marketplace
-spec:
-  sourceType: grpc
-  image: somedockerrepohostname/drb/hello-ocp-operator-catalog:v0.0.1
-  displayName: Hello OCP
-  updateStrategy:
-    registryPoll: 
-      interval: 30m
-```
+Enter catalog image into helloocp-catalog-source.yaml
 
 ## Trying out OLM operator
 - Apply catsrc
 - Wait til catsrc ready
 - Create operator on stable in specific namespace
 - Click on installed operator > Hello OCP
-  - observation: while there is a `+ XCreater instance` button, there is no Hello OCP tab for some reason  **TODO**
-- 
+  - observations: 
+    - while there is a `+ XCreater instance` button, there is no Hello OCP tab for some reason  **TODO**
+    - the sample cr in red ui was not from csv - I believe it is from the csv alm-examples
+-   
+
+## reconcile service and route
+
+#### references
+
+- API Ref for 1.17: https://v1-17.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/
+- golang route api: https://godoc.org/github.com/openshift/api/route/v1
+- new location of golang k8 doc (1.17): https://pkg.go.dev/k8s.io/api@v0.17.2/core/v1
+
+#### watch for service and route
+
+- change the alm-example while I remember, in the csv
+
+- In helloocp_controller.go, add watches for Service and Route types to add method
+- Copy existing watch statements, changing the type to the appropriate golang k8/openshift api type (and adding import)
+  - imports:
+  ```
+  corev1 "k8s.io/api/core/v1"       // already exists
+  routev1 "route.openshift.io/v1"       // need to add
+  ```
+  - watch first line:
+    - service: `err = c.Watch(&source.Kind{Type: &corev1.Service{}}, &handler.EnqueueRequestForOwner{`
+      - route: `err = c.Watch(&source.Kind{Type: &routev1.Route{}}, &handler.EnqueueRequestForOwner{`
+
+#### Add reconcile logic to Reconcile()
+
+- Move all of pod logic to reconcilePod, ensuring all types carried across as params
+- Requeue logic with multiple resources - requeue as soon as hit error, else continue to next resource
+- Copy reconcilePod, changing all types to Service, and populating service object with values from helloocp-service.yaml
