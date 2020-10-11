@@ -17,5 +17,5 @@ docker-build:
 
 .PHONY: docker-run
 docker-run:
-	docker run -p 8080:8080 -d hello:latest
+	docker run -p 8080:8080 -d hello:v0.0.1
 

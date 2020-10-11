@@ -9,6 +9,11 @@ In later chapters, this simple application will be the one managed by the operat
 - an OCP 4.4 or above cluster.
   - The tutorial has been tested on a range of OCP providers, and at OCP 4.4 and 4.5.
 - docker
+- You must overwrite key values in the examples
+  - This tutorial requires a number of values which are specific to your setup. Therefore, in all sections of this tutorial, you should search and replace the following values appropriately:
+    - DOCKERHOSTNAME - the fully qualified hostname of your docker repo
+    - DOCKERNAMESPACE - the namespace within your docker repo where all images will be pushed.
+    - OCPHOSTNAME - the fully qualified hostname of your ocp system. (e.fg. everything after `api.` or `apps.` )
 
 ## 1. Create Go app
 Create a simple go application, running a httpserver, returning a string.
@@ -38,10 +43,13 @@ Red Hat Openshift Container Platform utilises docker containers. You should ther
 An example dockerfile is provided: [Dockerfile](dockerfile)
 Test the dockerfile:
 - Build the image
-`docker build -t hello .`
+`docker build -t hello:v0.0.1 .`
+
+- Confirm the image was created
+`docker images | grep hello`
 
 - Run the image locally:
-`docker run -p 8080:8080 -d hello:latest`
+`docker run -p 8080:8080 -d hello:v0.0.1`
 
 - Confirm the container is running:
 `docker ps`
@@ -65,8 +73,6 @@ This step will show how to do both the following
  - b. creating app from CLI from source code
 
 ### 8.a Creating an app in OCP UI from an existing Dockerfile
-// _TODO_ - test later once pushed to public repo!!!
-
  - Log into your OCP web console through your browser of choice.
  - Select the 'Developer' perspective
  - Create a new project, for example `hello-dockerfile`
@@ -78,14 +84,18 @@ This step will show how to do both the following
     - Resources - select DeploymentConfig for more Openshift specific functionality
     - Create a Route - leave ticked
  - Click on `Routing`
-   - enter a hostname, including the full hostname of your OCP system, e.g. hello-docker.apps.OCPHOSTNAME
+   - enter a hostname, including the full hostname of your OCP system, e.g. hello-dockerfile.apps.OCPHOSTNAME
    - Path: `/hello`
    - Target port - enter the same port as above, e.g. 8080 (A service will be created which exposes this port
  - Click `Create`
  - In the OCP web console, view the build, the deploymentConfig, service and route
- - Test the application:
-   `curl  hello-docker.app.OCPHOSTNAME/hello`
-   Note: you didn't specify a port, so the http default port of 80 is used. A route services the port up on 80 by default
+ - Test the application
+   - Select the 'Administrator' perspective
+   - Networking
+   - Routes
+   - Click the link under 'Location' for the appropriate route.
+     - Note this is just a http url. You can also use `curl URLFROMLOCATIONFIELD`
+     - Note: if this fails initially, the pod running your application may not be up yet. Try again in a minute.
 
 ### 8.b Create app from CLI from source code
 // _TODO_ - test later once pushed to public repo!!!
@@ -109,37 +119,7 @@ OCP will now go off and spot this is go code, build a go image, push that into t
 
 See the Appendix at the bottom of this readme for rebuilding the image.
 
-## 9. Push image to docker registry accessible from your OCP system, ready for future sections.
-
-# Appendix:
-// _TODO_ retest these steps
-
-## i. Make a change to the app, rebuild the image
-
-- Make a change to the go app, e.g. change the Hello message.
-- Push the change to the public repo.
-- Remember the git commit message
-
-- in UI
-  - Select Administrator Perspective
-  - Select Builds->BuildConfigs
-  - Select Rebuild
-  - View the build under Builds
-  - Note the newly running build shows the new commit message.
-
-  _TODO_: Can we update the triggers to automatically spot this?
-
-- on CLI
-Note: you must have committed the change in git locally and pushed to git (presume oc new-app . spotted this is git and now uses git server?)
-  - `oc get builds`
-  - `oc start-build hello-ocp`
-  - `oc get builds`
-
-_TODO_ check this works for CLI local source approach too
-
-## ii. Test the app
-
-Once the build process has finished, you should now be able to run the app again:
- - Run: `curl  hello-ocp.apps-crc.testing/hello-ocp`
- - Note the new message is now returned.
-
+## 9. Push image to docker
+You will need the image in a docker registry accessible from your OCP system for future sections.
+`docker tag hello:v0.0.1 DOCKERHOSTNAME/DOCKERNAMESPACE/hello:v0.0.1`
+`docker push DOCKERHOSTNAME/DOCKERNAMESPACE/hello:v0.0.1`

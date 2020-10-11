@@ -1,8 +1,8 @@
 apiVersion: helloocp.example.com/v1alpha1
 kind: Helloocp
 metadata:
-  name: example-helloocp-3
+  name: ifre-test-helloocp
 spec:
   # Add fields here
   size: 1
-  helloName: name4
+  helloName: fritest
