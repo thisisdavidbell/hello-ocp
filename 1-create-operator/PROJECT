@@ -1,7 +1,0 @@
-domain: my.domain
-layout: go.kubebuilder.io/v2
-projectName: 1-create-operator
-repo: github.com/thisisdavidbell/hello-ocp/1-create-operator
-version: 3-alpha
-plugins:
-  go.sdk.operatorframework.io/v2-alpha: {}
